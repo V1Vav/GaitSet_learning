@@ -37,9 +37,9 @@ def load_data(dataset_path, resolution, dataset, pid_num, pid_shuffle, cache=Tru
             np.random.shuffle(pid_list)
         pid_list = [pid_list[0:pid_num], pid_list[pid_num:]]
         os.makedirs('partition', exist_ok=True)
-        np.save(pid_fname, pid_list)
+        np.save(pid_fname, np.array(pid_list, dtype=object))
 
-    pid_list = np.load(pid_fname)
+    pid_list = np.load(pid_fname, allow_pickle=True)
     train_list = pid_list[0]
     test_list = pid_list[1]
     train_source = DataSet(
