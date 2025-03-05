@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 class TripletLoss(nn.Module):
     def __init__(self, batch_size, hard_or_full, margin):
         super(TripletLoss, self).__init__()
@@ -18,16 +17,16 @@ class TripletLoss(nn.Module):
         dist = self.batch_dist(feature)
         mean_dist = dist.mean(1).mean(1)
         dist = dist.view(-1)
-        # hard
-        hard_hp_dist = torch.max(torch.masked_select(dist, hp_mask).view(n, m, -1), 2)[0]
-        hard_hn_dist = torch.min(torch.masked_select(dist, hn_mask).view(n, m, -1), 2)[0]
-        hard_loss_metric = F.relu(self.margin + hard_hp_dist - hard_hn_dist).view(n, -1)
 
+        # hard
+        hard_hp_dist = torch.max(torch.masked_select(dist, hp_mask.bool()).view(n, m, -1), 2)[0]
+        hard_hn_dist = torch.min(torch.masked_select(dist, hn_mask.bool()).view(n, m, -1), 2)[0]
+        hard_loss_metric = F.relu(self.margin + hard_hp_dist - hard_hn_dist).view(n, -1)
         hard_loss_metric_mean = torch.mean(hard_loss_metric, 1)
 
         # non-zero full
-        full_hp_dist = torch.masked_select(dist, hp_mask).view(n, m, -1, 1)
-        full_hn_dist = torch.masked_select(dist, hn_mask).view(n, m, 1, -1)
+        full_hp_dist = torch.masked_select(dist, hp_mask.bool()).view(n, m, -1, 1)
+        full_hn_dist = torch.masked_select(dist, hn_mask.bool()).view(n, m, 1, -1)
         full_loss_metric = F.relu(self.margin + full_hp_dist - full_hn_dist).view(n, -1)
 
         full_loss_metric_sum = full_loss_metric.sum(1)
